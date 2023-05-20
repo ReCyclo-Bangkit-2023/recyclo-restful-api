@@ -28,13 +28,14 @@
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-unused-imports": "^2.0.0",
+    "husky": "^8.0.0",
     "lint-staged": "^13.2.2",
     "nodemon": "^2.0.22",
     "prettier": "2.8.8",
-    "typescript": "^5.0.4",
-    "husky": "^8.0.0"
+    "typescript": "^5.0.4"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^6.5.0",
     "@hapi/hapi": "^21.3.2",
     "bcrypt": "^5.1.0",
     "nanoid": "^4.0.2",

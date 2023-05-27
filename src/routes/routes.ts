@@ -4,11 +4,15 @@ import Joi from 'joi';
 import {
   addRecycledGoods,
   addWaste,
+  confirmSellerTransaction,
   deleteRecycledGoods,
+  deleteTransaction,
   deleteWaste,
   getAllRecycledGoods,
+  getTransactions,
   getWastes,
   login,
+  orderCompleteTransaction,
   putRecycledGoods,
   putWaste,
   register,
@@ -132,6 +136,26 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     options: {
       auth: 'jwt-auth-bearer',
     },
+  },
+  {
+    method: 'GET',
+    path: '/api/transactions/{userId}',
+    handler: getTransactions,
+  },
+  {
+    method: 'PUT',
+    path: '/api/transactions/{transactionId}/confirm-seller',
+    handler: confirmSellerTransaction,
+  },
+  {
+    method: 'PUT',
+    path: '/api/transactions/{transactionId}/order-complete',
+    handler: orderCompleteTransaction,
+  },
+  {
+    method: 'DELETE',
+    path: '/api/transactions/{transactionId}/cancel-order',
+    handler: deleteTransaction,
   },
 ];
 export default routes;

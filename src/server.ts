@@ -1,4 +1,5 @@
 import Hapi from '@hapi/hapi';
+import jwtAuthBearerScheme from './auth/scheme/jwt-auth-bearer-scheme.js';
 import routes from './routes/routes.js';
 
 export const initHapiServer = async () => {
@@ -11,6 +12,10 @@ export const initHapiServer = async () => {
       },
     },
   });
+
+  hapiServer.auth.scheme('jwt-auth-bearer', jwtAuthBearerScheme);
+
+  hapiServer.auth.strategy('jwt-auth-bearer', 'jwt-auth-bearer');
 
   hapiServer.route(routes);
 

@@ -66,6 +66,7 @@ const register = async (
       .response({
         error: false,
         token: jwtToken,
+        userId,
       })
       .code(201);
   } catch (error) {

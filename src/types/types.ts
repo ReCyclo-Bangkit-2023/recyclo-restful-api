@@ -9,3 +9,8 @@ export interface UserDataDocProps {
 }
 
 export type RegisterRequestBodyProps = Omit<UserDataDocProps, 'userId'>;
+
+export type LoginRequestBodyProps = Pick<
+  UserDataDocProps,
+  'email' | 'password'
+>;

@@ -1,7 +1,7 @@
 import type { ReqRefDefaults } from '@hapi/hapi/lib/types/request.js';
 import type { ServerRoute } from '@hapi/hapi/lib/types/route.js';
 import Joi from 'joi';
-import { register } from '../handlers/recyclo-handlers.js';
+import { login, register } from '../handlers/recyclo-handlers.js';
 
 const routes: ServerRoute<ReqRefDefaults>[] = [
   {
@@ -20,6 +20,19 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
       },
     },
     handler: register,
+  },
+  {
+    method: 'POST',
+    path: '/login',
+    options: {
+      validate: {
+        payload: Joi.object({
+          email: Joi.string().email(),
+          password: Joi.string().min(8),
+        }),
+      },
+    },
+    handler: login,
   },
 ];
 export default routes;

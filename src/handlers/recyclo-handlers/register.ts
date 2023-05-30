@@ -20,7 +20,7 @@ const register = async (
   const { fullname, email, address, phoneNumber, city, password } =
     request.payload as RegisterRequestBodyProps;
 
-  const userId = `user-${nanoid(32)}`;
+  const userId = `user:${nanoid(32)}`;
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const usersRefs = db.collection('users');

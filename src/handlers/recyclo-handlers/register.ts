@@ -2,7 +2,6 @@ import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import Jwt from '@hapi/jwt';
 import bcrypt from 'bcrypt';
-import { nanoid } from 'nanoid';
 import config from '../../config/config.js';
 import ValidationError from '../../exception/validation-error.js';
 import getHourInSeconds from '../../lib/get-hour-in-seconds.js';
@@ -20,11 +19,12 @@ const register = async (
   const { fullname, email, address, phoneNumber, city, password } =
     request.payload as RegisterRequestBodyProps;
 
-  const userId = `user:${nanoid(32)}`;
   const hashedPassword = await bcrypt.hash(password, 12);
 
   const usersRefs = db.collection('users');
-  const userDocRef = db.collection('users').doc(userId);
+  const userDocRef = usersRefs.doc();
+
+  const userId = userDocRef.id;
 
   try {
     await db.runTransaction(async (tx) => {

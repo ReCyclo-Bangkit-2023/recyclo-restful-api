@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "NODE_ENV=production node dist/server.js",
     "start-dev": "nodemon dist/server.js",
     "lint": "eslint --ext .js,.ts .",
     "format": "prettier -w \"**/*.{js,ts,json}\"",

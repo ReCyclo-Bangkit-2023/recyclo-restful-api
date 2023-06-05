@@ -4,13 +4,8 @@ import routes from './routes/routes.js';
 
 export const initHapiServer = async () => {
   const hapiServer = Hapi.server({
-    port: 8080,
-    host: 'localhost',
-    routes: {
-      cors: {
-        origin: ['*'],
-      },
-    },
+    port: 9000,
+    host: process.env.NODE_ENV !== 'production' ? 'localhost' : '0.0.0.0',
   });
 
   hapiServer.auth.scheme('jwt-auth-bearer', jwtAuthBearerScheme);

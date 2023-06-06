@@ -55,6 +55,7 @@ const login = async (
       return h
         .response({
           error: false,
+          message: 'success',
           token: jwtToken,
           userId: userData.userId,
         })
@@ -68,6 +69,8 @@ const login = async (
         .response({
           error: true,
           message: error.message,
+          token: '',
+          userId: '',
         })
         .code(401);
     }

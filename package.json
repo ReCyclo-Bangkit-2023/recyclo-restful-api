@@ -1,6 +1,28 @@
 {
   "name": "recyclo-restful-api",
   "author": "Syahda Romansyah <syahdarom@gmail.com>",
+  "contributors": [
+    {
+      "name": "Adisti Dwi Susanti",
+      "email": "adistids08@gmail.com"
+    },
+    {
+      "name": "Adisti Dwi Susanti",
+      "email": "c208dky4336@bangkit.academy"
+    },
+    {
+      "name": "Rahmat Sunjani",
+      "email": "klikrahmatsunjani@gmail.com"
+    },
+    {
+      "name": "Rahmat Sunjani",
+      "email": "c289dsx3135@bangkit.academy"
+    },
+    {
+      "name": "Syahda Romansyah",
+      "email": "c360dsx1645@bangkit.academy"
+    }
+  ],
   "private": "true",
   "description": "ReCyclo RESTful API",
   "type": "module",

@@ -65,6 +65,7 @@ const register = async (
     return h
       .response({
         error: false,
+        message: 'success',
         token: jwtToken,
         userId,
       })
@@ -75,6 +76,8 @@ const register = async (
         .response({
           error: true,
           message: error.message,
+          token: '',
+          userId: '',
         })
         .code(409);
     }

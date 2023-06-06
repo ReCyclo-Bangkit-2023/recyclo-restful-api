@@ -1,7 +1,14 @@
 import type { ReqRefDefaults } from '@hapi/hapi/lib/types/request.js';
 import type { ServerRoute } from '@hapi/hapi/lib/types/route.js';
 import Joi from 'joi';
-import { login, register } from '../handlers/recyclo-handlers.js';
+import {
+  addRecycledGoods,
+  deleteRecycledGoods,
+  getAllRecycledGoods,
+  login,
+  putRecycledGoods,
+  register,
+} from '../handlers/recyclo-handlers.js';
 
 const routes: ServerRoute<ReqRefDefaults>[] = [
   {
@@ -33,6 +40,50 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
       },
     },
     handler: login,
+  },
+  {
+    method: 'GET',
+    path: '/api/recycled-goods',
+    handler: getAllRecycledGoods,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/recycled-goods',
+    handler: addRecycledGoods,
+    options: {
+      auth: 'jwt-auth-bearer',
+      payload: {
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: { output: 'data' },
+        maxBytes: 8388608,
+      },
+    },
+  },
+  {
+    method: 'PUT',
+    path: '/api/recycled-goods/{recycledGoodsId}',
+    handler: putRecycledGoods,
+    options: {
+      auth: 'jwt-auth-bearer',
+      payload: {
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: { output: 'data' },
+        maxBytes: 8388608,
+      },
+    },
+  },
+  {
+    method: 'DELETE',
+    path: '/api/recycled-goods/{recycledGoodsId}',
+    handler: deleteRecycledGoods,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
 ];
 export default routes;

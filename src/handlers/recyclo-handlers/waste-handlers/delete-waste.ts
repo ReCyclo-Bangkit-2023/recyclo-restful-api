@@ -1,10 +1,13 @@
-import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import type { ReqRefDefaults, Request } from '@hapi/hapi';
 
 const deleteWaste = (
-  request: Request<ReqRefDefaults>,
-  h: ResponseToolkit<ReqRefDefaults>
+  request: Request<ReqRefDefaults>
+  // h: ResponseToolkit<ReqRefDefaults>
 ) => {
-  return h.response('implement me');
+  const WasteId = request.params.wasteId as string;
+  return JSON.stringify({
+    message: `implement DELETE with wasteId ${WasteId}`,
+  });
 };
 
 export default deleteWaste;

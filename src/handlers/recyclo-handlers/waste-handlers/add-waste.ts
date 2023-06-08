@@ -1,10 +1,15 @@
-import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import type { ReqRefDefaults, Request } from '@hapi/hapi';
 
 const addWaste = (
-  request: Request<ReqRefDefaults>,
-  h: ResponseToolkit<ReqRefDefaults>
+  request: Request<ReqRefDefaults>
+  // h: ResponseToolkit<ReqRefDefaults>
 ) => {
-  return h.response('implement me');
+  const data = request.payload;
+
+  return JSON.stringify({
+    message: 'implement me POST',
+    data: data,
+  });
 };
 
 export default addWaste;

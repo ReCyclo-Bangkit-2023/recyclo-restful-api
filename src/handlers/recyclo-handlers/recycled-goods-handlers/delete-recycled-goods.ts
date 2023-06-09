@@ -24,7 +24,6 @@ const deleteRecycledGoods = async (
 
   if (recycledGoodsDoc.exists) {
     await deleteImages({
-      isClient: true,
       recycledType: 'recycled-goods',
       userId,
       recycledId: recycledGoodsId,

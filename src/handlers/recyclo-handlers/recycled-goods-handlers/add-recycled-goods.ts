@@ -3,6 +3,7 @@ import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import { Readable } from 'node:stream';
 import ValidationError from '../../../exception/validation-error.js';
 import compressBufferImgs from '../../../helpers/compress-buffer-imgs.js';
+import createRecycledImgUrl from '../../../helpers/create-recycled-img-url.js';
 import sendImage from '../../../helpers/send-image.js';
 import type { AddRecycledGoodsReqBodyProps } from '../../../types/types.js';
 
@@ -35,14 +36,19 @@ const addRecycledGoods = async (
       !Buffer.isBuffer(image2) ||
       !Buffer.isBuffer(image3);
 
-    if (isNotBufferImgs) throw new ValidationError('gambar tidak valid');
+    if (isNotBufferImgs)
+      throw new ValidationError('gambar tidak valid atau tidak lengkap');
 
-    const recycledGoodsDocRef = firestoreDB.collection('recycledGoods').doc();
+    const recycledGoodsRef = firestoreDB.collection('recycledGoods');
 
-    const recycledGoodsId = recycledGoodsDocRef.id;
+    const recycledGoodsDocRef = recycledGoodsRef.doc();
+
+    const recycledGoodsTotal = (await recycledGoodsRef.count().get()).data();
+
+    const recycledGoodsId = recycledGoodsTotal.count + 1;
 
     const { compressedBfImage1, compressedBfImage2, compressedBfImage3 } =
-      await compressBufferImgs([image1, image2, image3], 40);
+      await compressBufferImgs([image1, image2, image3], 20);
 
     const compressedStreamImages = {
       image1: Readable.from(compressedBfImage1),
@@ -58,14 +64,16 @@ const addRecycledGoods = async (
             compressedStreamImgProp as keyof typeof compressedStreamImages
           ],
         userId,
-        recycledId: recycledGoodsId,
-        isClient: true,
+        recycledId: recycledGoodsId.toString(),
         imageName: compressedStreamImgProp,
       });
     }
 
-    const createRecycledGoodsImgUrl = (numberImage: number) =>
-      `https://storage.googleapis.com/recyclo-387407-bucket/client/recycled-goods/${userId}/${recycledGoodsId}/image${numberImage}.jpeg`;
+    const createRecycledGoodsImgUrl = createRecycledImgUrl({
+      recycledType: 'recycled-goods',
+      userId,
+      recycledId: recycledGoodsId.toString(),
+    });
 
     const newRecycledGoodsData = {
       id: recycledGoodsId,

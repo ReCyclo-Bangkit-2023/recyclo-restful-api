@@ -3,10 +3,14 @@ import type { ServerRoute } from '@hapi/hapi/lib/types/route.js';
 import Joi from 'joi';
 import {
   addRecycledGoods,
+  addWaste,
   deleteRecycledGoods,
+  deleteWaste,
   getAllRecycledGoods,
+  getWastes,
   login,
   putRecycledGoods,
+  putWaste,
   register,
 } from '../handlers/recyclo-handlers.js';
 
@@ -84,6 +88,26 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     options: {
       auth: 'jwt-auth-bearer',
     },
+  },
+  {
+    method: 'GET',
+    path: '/api/wastes',
+    handler: getWastes,
+  },
+  {
+    method: 'POST',
+    path: '/api/wastes',
+    handler: addWaste,
+  },
+  {
+    method: 'PUT',
+    path: '/api/wastes/{wasteId}',
+    handler: putWaste,
+  },
+  {
+    method: 'DELETE',
+    path: '/api/wastes/{wasteId}',
+    handler: deleteWaste,
   },
 ];
 export default routes;

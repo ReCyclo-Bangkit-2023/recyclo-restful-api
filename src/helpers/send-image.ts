@@ -7,7 +7,6 @@ interface SendImageProps {
   readableBfImg: Readable;
   userId: string;
   recycledId: string;
-  isClient: boolean;
   imageName: string;
 }
 
@@ -18,7 +17,6 @@ const sendImage = ({
   readableBfImg,
   userId,
   recycledId,
-  isClient,
   imageName,
 }: SendImageProps) =>
   new Promise<void>((resolve, reject) => {
@@ -26,11 +24,7 @@ const sendImage = ({
       readableBfImg,
       storage
         .bucket(config.CLOUD_STORAGE_BUCKET_NAME)
-        .file(
-          `${
-            isClient ? 'client' : 'ml'
-          }/${recycledType}/${userId}/${recycledId}/${imageName}.jpeg`
-        )
+        .file(`${recycledType}/${userId}/${recycledId}/${imageName}.jpeg`)
         .createWriteStream(),
       (error) => {
         if (error) {

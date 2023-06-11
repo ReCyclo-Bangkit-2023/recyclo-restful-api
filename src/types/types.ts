@@ -54,3 +54,11 @@ export type PutRecycledGoodsReqBodyProps = AddRecycledGoodsReqBodyProps;
 export interface RecycledGoodsResBodyProps extends RecycledGoodsDocProps {
   key: number;
 }
+
+export type WasteDocProps = RecycledGoodsDocProps;
+
+export type AddWasteReqBodyProps = AddRecycledGoodsReqBodyProps;
+
+export type PutWasteReqBodyProps = PutRecycledGoodsReqBodyProps;
+
+export type WasteResBodyProps = RecycledGoodsResBodyProps;

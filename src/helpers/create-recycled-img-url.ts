@@ -6,8 +6,6 @@ interface CreateRecycledImgUrlProps {
 
 const createRecycledImgUrl =
   ({ recycledType, userId, recycledId }: CreateRecycledImgUrlProps) =>
-  (numberImage: number) => {
+  (numberImage: number) =>
     `https://storage.googleapis.com/recyclo-387407-bucket/${recycledType}/${userId}/${recycledId}/image${numberImage}.jpeg`;
-  };
-
 export default createRecycledImgUrl;

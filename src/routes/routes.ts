@@ -93,21 +93,45 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     method: 'GET',
     path: '/api/wastes',
     handler: getWastes,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
   {
     method: 'POST',
     path: '/api/wastes',
     handler: addWaste,
+    options: {
+      auth: 'jwt-auth-bearer',
+      payload: {
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: { output: 'data' },
+        maxBytes: 8388608,
+      },
+    },
   },
   {
     method: 'PUT',
     path: '/api/wastes/{wasteId}',
     handler: putWaste,
+    options: {
+      auth: 'jwt-auth-bearer',
+      payload: {
+        parse: true,
+        allow: 'multipart/form-data',
+        multipart: { output: 'data' },
+        maxBytes: 8388608,
+      },
+    },
   },
   {
     method: 'DELETE',
     path: '/api/wastes/{wasteId}',
     handler: deleteWaste,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
 ];
 export default routes;

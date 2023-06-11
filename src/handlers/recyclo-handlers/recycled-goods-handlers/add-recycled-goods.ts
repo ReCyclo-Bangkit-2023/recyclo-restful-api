@@ -43,9 +43,7 @@ const addRecycledGoods = async (
 
     const recycledGoodsDocRef = recycledGoodsRef.doc();
 
-    const recycledGoodsTotal = (await recycledGoodsRef.count().get()).data();
-
-    const recycledGoodsId = recycledGoodsTotal.count + 1;
+    const recycledGoodsId = recycledGoodsDocRef.id;
 
     const { compressedBfImage1, compressedBfImage2, compressedBfImage3 } =
       await compressBufferImgs([image1, image2, image3], 20);
@@ -64,7 +62,7 @@ const addRecycledGoods = async (
             compressedStreamImgProp as keyof typeof compressedStreamImages
           ],
         userId,
-        recycledId: recycledGoodsId.toString(),
+        recycledId: recycledGoodsId,
         imageName: compressedStreamImgProp,
       });
     }
@@ -72,7 +70,7 @@ const addRecycledGoods = async (
     const createRecycledGoodsImgUrl = createRecycledImgUrl({
       recycledType: 'recycled-goods',
       userId,
-      recycledId: recycledGoodsId.toString(),
+      recycledId: recycledGoodsId,
     });
 
     const newRecycledGoodsData = {
@@ -90,9 +88,7 @@ const addRecycledGoods = async (
       long,
     };
 
-    await recycledGoodsDocRef.set({
-      ...newRecycledGoodsData,
-    });
+    await recycledGoodsDocRef.set(newRecycledGoodsData);
 
     return h
       .response({

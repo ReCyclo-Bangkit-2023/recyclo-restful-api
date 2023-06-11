@@ -78,7 +78,7 @@ const putRecycledGoods = async (
             compressedStreamImgProp as keyof typeof compressedStreamImages
           ],
         userId,
-        recycledId: recycledGoodsId.toString(),
+        recycledId: recycledGoodsId,
         imageName: compressedStreamImgProp,
       });
     }
@@ -108,9 +108,7 @@ const putRecycledGoods = async (
       .response({
         error: false,
         message: 'success',
-        data: {
-          ...updatedRecycledGoods,
-        },
+        data: updatedRecycledGoods,
       })
       .code(200);
   } catch (error) {

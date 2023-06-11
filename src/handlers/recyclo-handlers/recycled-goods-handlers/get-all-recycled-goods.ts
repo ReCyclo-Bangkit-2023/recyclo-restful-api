@@ -1,6 +1,9 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
-import type { RecycledGoodsDocProps } from '../../../types/types.js';
+import type {
+  RecycledGoodsDocProps,
+  RecycledGoodsResBodyProps,
+} from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -13,14 +16,23 @@ const getAllRecycledGoods = async (
   };
 
   const recycledGoodsRef = firestoreDB.collection('recycledGoods');
-  const recycledGoodsData: RecycledGoodsDocProps[] = [];
+  const recycledGoodsSnapshotData: RecycledGoodsDocProps[] = [];
   const recycledGoodsSnapshot = await recycledGoodsRef
     .where('userId', '==', userId)
     .get();
 
   recycledGoodsSnapshot.forEach((doc) => {
     const recycledGoodsDocData = doc.data() as RecycledGoodsDocProps;
-    recycledGoodsData.push(recycledGoodsDocData);
+    recycledGoodsSnapshotData.push(recycledGoodsDocData);
+  });
+
+  const recycledGoodsData: RecycledGoodsResBodyProps[] = [];
+
+  recycledGoodsSnapshotData.forEach((recycledGoods, idx) => {
+    recycledGoodsData.push({
+      key: idx + 1,
+      ...recycledGoods,
+    });
   });
 
   return h

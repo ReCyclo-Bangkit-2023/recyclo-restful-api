@@ -25,7 +25,7 @@ export interface DecodedTokenPayloadProps {
 
 export type JwtTokenVerifyOpt = Parameters<typeof Jwt.token.verify>[2];
 export interface RecycledGoodsDocProps {
-  id: number;
+  id: string;
   userId: string;
   title: string;
   price: number;
@@ -50,3 +50,7 @@ export interface AddRecycledGoodsReqBodyProps
 }
 
 export type PutRecycledGoodsReqBodyProps = AddRecycledGoodsReqBodyProps;
+
+export interface RecycledGoodsResBodyProps extends RecycledGoodsDocProps {
+  key: number;
+}

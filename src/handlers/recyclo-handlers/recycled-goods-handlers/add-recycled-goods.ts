@@ -1,11 +1,15 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import { Readable } from 'node:stream';
+import config from '../../../config/config.js';
 import ValidationError from '../../../exception/validation-error.js';
 import compressBufferImgs from '../../../helpers/compress-buffer-imgs.js';
 import createRecycledImgUrl from '../../../helpers/create-recycled-img-url.js';
 import sendImage from '../../../helpers/send-image.js';
-import type { AddRecycledGoodsReqBodyProps } from '../../../types/types.js';
+import type {
+  AddRecycledGoodsReqBodyProps,
+  RecycledGoodsDocProps,
+} from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -39,7 +43,9 @@ const addRecycledGoods = async (
     if (isNotBufferImgs)
       throw new ValidationError('gambar tidak valid atau tidak lengkap');
 
-    const recycledGoodsRef = firestoreDB.collection('recycledGoods');
+    const recycledGoodsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
+    );
 
     const recycledGoodsDocRef = recycledGoodsRef.doc();
 
@@ -73,8 +79,9 @@ const addRecycledGoods = async (
       recycledId: recycledGoodsId,
     });
 
-    const newRecycledGoodsData = {
+    const newRecycledGoodsData: RecycledGoodsDocProps = {
       id: recycledGoodsId,
+      recycledType: 'recycledGoods',
       userId,
       title,
       price,

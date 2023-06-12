@@ -1,6 +1,7 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import { Readable } from 'stream';
+import config from '../../../config/config.js';
 import NotFoundError from '../../../exception/not-found-error.js';
 import ValidationError from '../../../exception/validation-error.js';
 import compressBufferImgs from '../../../helpers/compress-buffer-imgs.js';
@@ -38,7 +39,7 @@ const putRecycledGoods = async (
     } = request.payload as PutRecycledGoodsReqBodyProps;
 
     const recycledGoodsDocRef = firestoreDB
-      .collection('recycledGoods')
+      .collection(config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION)
       .doc(recycledGoodsId);
 
     const recycledGoodsDoc = await recycledGoodsDocRef.get();

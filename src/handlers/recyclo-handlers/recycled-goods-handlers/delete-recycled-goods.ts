@@ -1,5 +1,6 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import config from '../../../config/config.js';
 import deleteImages from '../../../helpers/delete-images.js';
 
 const firestoreDB = new Firestore();
@@ -17,7 +18,7 @@ const deleteRecycledGoods = async (
   };
 
   const recycledGoodsDocRef = firestoreDB
-    .collection('recycledGoods')
+    .collection(config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION)
     .doc(recycledGoodsId);
 
   const recycledGoodsDoc = await recycledGoodsDocRef.get();

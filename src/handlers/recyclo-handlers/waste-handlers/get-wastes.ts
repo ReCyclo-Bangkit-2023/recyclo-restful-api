@@ -1,5 +1,6 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import config from '../../../config/config.js';
 import type { WasteDocProps, WasteResBodyProps } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
@@ -12,9 +13,14 @@ const getWastes = async (
     userId: string;
   };
 
-  const wastesRef = firestoreDB.collection('wastes');
+  const wastesRef = firestoreDB.collection(
+    config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
+  );
   const wasteSnapshotData: WasteDocProps[] = [];
-  const wastesSnapshot = await wastesRef.where('userId', '==', userId).get();
+  const wastesSnapshot = await wastesRef
+    .where('userId', '==', userId)
+    .where('recycledType', '==', 'waste')
+    .get();
 
   wastesSnapshot.forEach((doc) => {
     const wasteDocData = doc.data() as WasteDocProps;

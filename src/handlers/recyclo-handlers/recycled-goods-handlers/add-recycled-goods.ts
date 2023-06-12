@@ -8,7 +8,7 @@ import createRecycledImgUrl from '../../../helpers/create-recycled-img-url.js';
 import sendImage from '../../../helpers/send-image.js';
 import type {
   AddRecycledGoodsReqBodyProps,
-  RecycledGoodsDocProps,
+  RecycledGoodsResBodyProps,
 } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
@@ -79,7 +79,7 @@ const addRecycledGoods = async (
       recycledId: recycledGoodsId,
     });
 
-    const newRecycledGoodsData: RecycledGoodsDocProps = {
+    const newRecycledGoodsData: Omit<RecycledGoodsResBodyProps, 'key'> = {
       id: recycledGoodsId,
       recycledType: 'recycledGoods',
       userId,

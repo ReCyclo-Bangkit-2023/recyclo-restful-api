@@ -8,7 +8,10 @@ import compressBufferImgs from '../../../helpers/compress-buffer-imgs.js';
 import createRecycledImgUrl from '../../../helpers/create-recycled-img-url.js';
 import deleteImages from '../../../helpers/delete-images.js';
 import sendImage from '../../../helpers/send-image.js';
-import type { PutRecycledGoodsReqBodyProps } from '../../../types/types.js';
+import type {
+  PutRecycledGoodsReqBodyProps,
+  RecycledGoodsDocProps,
+} from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -90,7 +93,10 @@ const putRecycledGoods = async (
       recycledId: recycledGoodsId,
     });
 
-    const updatedRecycledGoods = {
+    const updatedRecycledGoods: Omit<
+      RecycledGoodsDocProps,
+      'id' | 'userId' | 'recycledType'
+    > = {
       title: title ? title : (recycledGoodsDoc.get('title') as string),
       price: price ? price : (recycledGoodsDoc.get('price') as number),
       kind: kind ? kind : (recycledGoodsDoc.get('kind') as string),

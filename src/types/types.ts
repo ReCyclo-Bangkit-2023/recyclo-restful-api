@@ -31,6 +31,7 @@ export interface RecycledItems {
   userId: string;
   title: string;
   price: number;
+  sold: number;
   kind: string;
   amount: number;
   image1: string;

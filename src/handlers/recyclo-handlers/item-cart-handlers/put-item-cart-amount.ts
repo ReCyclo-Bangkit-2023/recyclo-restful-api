@@ -31,16 +31,18 @@ const putItemCartAmount = async (
 
     const itemCartDocData = itemCartDocSnapshot.data() as ItemCartDocProps;
 
+    let updatedAmount = 0;
+
     if (operation === 'plus') {
+      updatedAmount = itemCartDocData.amount + 1;
       await itemCartDocRef.update({
-        amount: itemCartDocData.amount + 1,
+        amount: updatedAmount,
       });
     } else if (operation === 'min') {
-      const updatedAmount = itemCartDocData.amount - 1;
-
-      if (updatedAmount > 0) {
+      if (itemCartDocData.amount - 1 > 0) {
+        updatedAmount = itemCartDocData.amount - 1;
         await itemCartDocRef.update({
-          amount: itemCartDocData.amount - 1,
+          amount: updatedAmount,
         });
       }
     } else {
@@ -51,7 +53,9 @@ const putItemCartAmount = async (
       .response({
         error: false,
         message: 'success',
-        data: {},
+        data: {
+          amount: updatedAmount,
+        },
       })
       .code(200);
   } catch (error) {

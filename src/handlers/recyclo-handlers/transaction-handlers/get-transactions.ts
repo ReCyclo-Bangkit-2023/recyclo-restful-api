@@ -1,58 +1,50 @@
-import { Request, ResponseToolkit } from '@hapi/hapi';
+import { Firestore } from '@google-cloud/firestore';
+import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import config from '../../../config/config.js';
+import type { TransactionDocProps } from '../../../types/types.js';
 
-interface TransactionProps {
-  transactionId: string;
-  userId: string;
-  title: string;
-  fee: number;
-  itemPrice: number;
-  amount: number;
-  statusTransaction: string;
-  date: string;
-}
-const transactions: TransactionProps[] = [
-  {
-    transactionId: '001',
-    userId: 'user1',
-    title: 'Kerajinan Rotan',
-    fee: 5000,
-    itemPrice: 1000000,
-    amount: 1005000,
-    statusTransaction: 'Delivered',
-    date: new Date().toISOString(),
-  },
-  {
-    transactionId: '002',
-    userId: 'user2',
-    title: 'Kerajinan Plastik',
-    fee: 5000,
-    itemPrice: 50000,
-    amount: 55000,
-    statusTransaction: 'In Delivery Process',
-    date: new Date().toISOString(),
-  },
-];
+const firestoreDB = new Firestore();
 
-const getTransactions = (request: Request, h: ResponseToolkit) => {
-  const { userId } = request.params;
-  const index = transactions.filter(
-    (transaction) => transaction.userId === userId
-  ); // memilih userId yang akan ditampilkan
+const getTransactions = async (
+  request: Request<ReqRefDefaults>,
+  h: ResponseToolkit<ReqRefDefaults>
+) => {
+  const { userId } = request.auth.credentials as {
+    userId: string;
+  };
 
-  if (index) {
-    return {
-      status: 'success',
-      data: {
-        index,
-      },
-    };
-  }
-  const response = h.response({
-    status: 'fail',
-    message: 'transaction not found',
+  const transactionsRef = firestoreDB.collection(
+    config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
+  );
+
+  const transactionSnapshot = await transactionsRef
+    .where('userId', '==', userId)
+    .get();
+
+  const transactionDocsData: TransactionDocProps[] = [];
+
+  transactionSnapshot.forEach((transactionDoc) => {
+    const transactionDocData = transactionDoc.data() as TransactionDocProps;
+
+    transactionDocsData.push(transactionDocData);
   });
-  response.code(404);
-  return response;
+
+  const transactionData: (TransactionDocProps & {
+    key: number;
+  })[] = [];
+
+  transactionDocsData.forEach((transactionDoc, idx) => {
+    transactionData.push({
+      key: idx + 1,
+      ...transactionDoc,
+    });
+  });
+
+  return h.response({
+    error: false,
+    message: 'success',
+    data: transactionData,
+  });
 };
 
 export default getTransactions;

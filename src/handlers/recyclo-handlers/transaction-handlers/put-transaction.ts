@@ -1,80 +1,135 @@
-import { Request, ResponseToolkit } from '@hapi/hapi';
+import { Firestore } from '@google-cloud/firestore';
+import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import config from '../../../config/config.js';
+import NotFoundError from '../../../exception/not-found-error.js';
+import type {
+  RecycledItem,
+  TransactionDocProps,
+} from '../../../types/types.js';
 
-/*interface TransactionProps {
-  transactionId: string;
-  userId: string; // seller
-  statusTransaction: string;
-  date: string;
-}*/
+const firestoreDB = new Firestore();
 
-const transactions = [
-  {
-    transactionId: '001',
-    userId: 'user1',
-    statusTransaction: 'Berhasil Dikirim',
-    date: new Date().toISOString(),
-  },
-  {
-    transactionId: '002',
-    userId: 'user2',
-    statusTransaction: 'Belum Dikirim',
-    date: new Date().toISOString(),
-  },
-];
-
-export const confirmSellerTransaction = (
-  request: Request,
-  h: ResponseToolkit
+export const confirmSellerTransaction = async (
+  request: Request<ReqRefDefaults>,
+  h: ResponseToolkit<ReqRefDefaults>
 ) => {
-  const { transactionId } = request.params;
-  const { statusTransaction } = request.payload as {
-    statusTransaction: string;
-  };
-  const transaction = transactions.find(
-    (t) => t.transactionId === transactionId
-  );
-  if (transaction) {
-    transaction.statusTransaction = statusTransaction;
-    return {
-      status: 'success',
-      transactionId: transaction.transactionId,
-      message: 'Seller transaction confirmed successfully',
+  try {
+    const { transactionId } = request.params as {
+      transactionId: string;
     };
+
+    const transactionsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
+    );
+
+    const transactionDocRef = transactionsRef.doc(transactionId);
+
+    const transactionDocSnapshot = await transactionDocRef.get();
+
+    if (!transactionDocSnapshot.exists)
+      throw new NotFoundError('id transaksi tidak ditemukan');
+
+    await transactionDocRef.update({
+      statusTransaction: 'sending',
+    });
+
+    return h.response({
+      error: false,
+      message: 'success',
+      data: {
+        id: transactionId,
+        statusTransaction: 'sending',
+      },
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return h
+        .response({
+          error: true,
+          message: error.message,
+          data: {},
+        })
+        .code(404);
+    }
+
+    return h
+      .response({
+        error: true,
+        message: (error as Error).message,
+        data: {},
+      })
+      .code(500);
   }
-  return h
-    .response({
-      status: 'fail',
-      message: 'Transaction not found',
-    })
-    .code(404);
 };
 
-//orderCompleteTransaction
-export const orderCompleteTransaction = (
-  request: Request,
-  h: ResponseToolkit
+export const orderCompleteTransaction = async (
+  request: Request<ReqRefDefaults>,
+  h: ResponseToolkit<ReqRefDefaults>
 ) => {
-  const { transactionId } = request.params;
-  const { id, statusOrder } = request.payload as {
-    id: string;
-    statusOrder: string;
-  };
-  const transaction = transactions.find(
-    (t) => t.transactionId === transactionId
-  );
-  if (transaction) {
-    transaction.statusTransaction = statusOrder; //kalau pembayaran sudah terverifikasi maka selesai
-    return {
-      status: 'success',
-      transactionId: id,
-      message: 'Order completed successfully',
+  try {
+    const { transactionId } = request.params as {
+      transactionId: string;
     };
-  }
 
-  const response = h.response({
-    status: 'fail',
-    message: 'Order not found',
-  });
-  response.code(404);
-  return response;
+    const transactionsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
+    );
+
+    const transactionDocRef = transactionsRef.doc(transactionId);
+
+    const transactionDocSnapshot = await transactionDocRef.get();
+
+    if (!transactionDocSnapshot.exists)
+      throw new NotFoundError('id transaksi tidak ditemukan');
+
+    const transactionDocData =
+      transactionDocSnapshot.data() as TransactionDocProps;
+
+    const recycledItemsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
+    );
+
+    const recycledItemDocRef = recycledItemsRef.doc(
+      transactionDocData.recycledId
+    );
+
+    const recycledItemDocSnapshot = await recycledItemDocRef.get();
+
+    const recycledItemDocData = recycledItemDocSnapshot.data() as RecycledItem;
+
+    await recycledItemDocRef.update({
+      sold: recycledItemDocData.sold + transactionDocData.amount,
+    });
+
+    await transactionDocRef.update({
+      statusTransaction: 'done',
+    });
+
+    return h.response({
+      error: false,
+      message: 'success',
+      data: {
+        id: transactionId,
+        statusTransaction: 'done',
+      },
+    });
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return h
+        .response({
+          error: true,
+          message: error.message,
+          data: {},
+        })
+        .code(404);
+    }
+
+    return h
+      .response({
+        error: true,
+        message: (error as Error).message,
+        data: {},
+      })
+      .code(500);
+  }
 };

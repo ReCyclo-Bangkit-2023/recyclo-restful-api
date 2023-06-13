@@ -95,7 +95,7 @@ const putRecycledGoods = async (
 
     const updatedRecycledGoods: Omit<
       RecycledGoodsDocProps,
-      'id' | 'userId' | 'recycledType'
+      'id' | 'userId' | 'recycledType' | 'sold'
     > = {
       title: title ? title : (recycledGoodsDoc.get('title') as string),
       price: price ? price : (recycledGoodsDoc.get('price') as number),

@@ -78,3 +78,14 @@ export type AddTransactionReqBodyProps = Pick<
   TransactionDocProps,
   'recycledId' | 'amount'
 >;
+
+export interface ItemCartDocProps {
+  id: string;
+  userId: string;
+  recycledId: string;
+  image: string;
+  title: string;
+  price: number;
+  city: string;
+  amount: number;
+}

@@ -1,7 +1,7 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import config from '../../../config/config.js';
-import type { WasteDocProps, WasteResBodyProps } from '../../../types/types.js';
+import type { WasteDocProps } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -27,7 +27,9 @@ const getWastes = async (
     wasteSnapshotData.push(wasteDocData);
   });
 
-  const wasteData: WasteResBodyProps[] = [];
+  const wasteData: (WasteDocProps & {
+    key: number;
+  })[] = [];
 
   wasteSnapshotData.forEach((waste, idx) => {
     wasteData.push({

@@ -1,10 +1,7 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import config from '../../../config/config.js';
-import type {
-  RecycledGoodsDocProps,
-  RecycledGoodsResBodyProps,
-} from '../../../types/types.js';
+import type { RecycledGoodsDocProps } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -30,7 +27,9 @@ const getAllRecycledGoods = async (
     recycledGoodsSnapshotData.push(recycledGoodsDocData);
   });
 
-  const recycledGoodsData: RecycledGoodsResBodyProps[] = [];
+  const recycledGoodsData: (RecycledGoodsDocProps & {
+    key: number;
+  })[] = [];
 
   recycledGoodsSnapshotData.forEach((recycledGoods, idx) => {
     recycledGoodsData.push({

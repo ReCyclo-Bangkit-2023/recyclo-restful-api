@@ -141,21 +141,33 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     method: 'GET',
     path: '/api/transactions',
     handler: getTransactions,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
   {
     method: 'PUT',
     path: '/api/transactions/{transactionId}/confirm-seller',
     handler: confirmSellerTransaction,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
   {
     method: 'PUT',
     path: '/api/transactions/{transactionId}/order-complete',
     handler: orderCompleteTransaction,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
   {
     method: 'DELETE',
     path: '/api/transactions/{transactionId}/cancel-order',
     handler: deleteTransaction,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
 ];
 export default routes;

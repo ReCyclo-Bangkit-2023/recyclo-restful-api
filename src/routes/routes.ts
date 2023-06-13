@@ -139,7 +139,7 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
   },
   {
     method: 'GET',
-    path: '/api/transactions/{userId}',
+    path: '/api/transactions',
     handler: getTransactions,
   },
   {

@@ -85,6 +85,7 @@ const addWaste = async (
       userId,
       title,
       price,
+      sold: 0,
       kind,
       amount,
       image1: createWasteImgUrl(1),

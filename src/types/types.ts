@@ -1,4 +1,3 @@
-import { Timestamp } from '@google-cloud/firestore';
 import Jwt from '@hapi/jwt';
 
 export interface UserDataDocProps {
@@ -67,11 +66,13 @@ export interface TransactionDocProps {
   id: string;
   userId: string;
   recycledId: string;
+  image: string;
   title: string;
   totalPrice: number;
   amount: number;
   statusTransaction: 'waiting' | 'sending' | 'done';
-  orderedDate: Timestamp;
+  orderedDate: string;
+  orderedTimestamp: number;
 }
 
 export type AddTransactionReqBodyProps = Pick<

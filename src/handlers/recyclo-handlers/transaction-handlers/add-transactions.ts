@@ -39,6 +39,8 @@ const addTransactions = async (
       itemCartIds.push(itemCartDoc.id);
     });
 
+    if (itemCartDocsData.length === 0) throw new Error('item cart Anda kosong');
+
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
     );

@@ -1,10 +1,11 @@
 import { Firestore, Timestamp } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
+import { format } from 'date-fns';
 import config from '../../../config/config.js';
 import NotFoundError from '../../../exception/not-found-error.js';
 import ValidationError from '../../../exception/validation-error.js';
 import type {
-  AddTransactionReqBodyProps,
+  ItemCartDocProps,
   RecycledItem,
   TransactionDocProps,
 } from '../../../types/types.js';
@@ -20,10 +21,23 @@ const addTransactions = async (
       userId: string;
     };
 
-    const transactionsPayload = request.payload as AddTransactionReqBodyProps[];
+    // Get all user item carts
+    const itemCartsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_CARTS_COLLECTION
+    );
 
-    if (!Array.isArray(transactionsPayload))
-      throw new ValidationError('request body tidak valid');
+    const itemCartsSnapshot = await itemCartsRef
+      .where('userId', '==', userId)
+      .get();
+
+    const itemCartIds: string[] = [];
+    const itemCartDocsData: ItemCartDocProps[] = [];
+
+    itemCartsSnapshot.forEach((itemCartDoc) => {
+      const itemCartDocData = itemCartDoc.data() as ItemCartDocProps;
+      itemCartDocsData.push(itemCartDocData);
+      itemCartIds.push(itemCartDoc.id);
+    });
 
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
@@ -35,8 +49,11 @@ const addTransactions = async (
 
     const newTransactionIds: { id: string }[] = [];
 
-    for (const transaction of transactionsPayload) {
-      const recycledItemDocRef = recycledItemsRef.doc(transaction.recycledId);
+    for (const itemCartDocData of itemCartDocsData) {
+      const recycledItemDocRef = recycledItemsRef.doc(
+        itemCartDocData.recycledId
+      );
+
       const recycledItemId = recycledItemDocRef.id;
 
       await firestoreDB.runTransaction(async (tx) => {
@@ -50,7 +67,7 @@ const addTransactions = async (
         const recycledItemData = recycledItemDocSnapshot.data() as RecycledItem;
 
         const transactionAmountExceeded =
-          recycledItemData.amount < transaction.amount;
+          recycledItemData.amount < itemCartDocData.amount;
 
         if (transactionAmountExceeded) return;
 
@@ -61,15 +78,17 @@ const addTransactions = async (
           id: transactionId,
           userId,
           recycledId: recycledItemId,
+          image: recycledItemData.image1,
           title: recycledItemData.title,
-          totalPrice: transaction.amount * recycledItemData.price + 1000,
-          amount: transaction.amount,
+          totalPrice: itemCartDocData.amount * recycledItemData.price + 1000,
+          amount: itemCartDocData.amount,
           statusTransaction: 'waiting',
-          orderedDate: Timestamp.fromDate(new Date()),
+          orderedDate: format(new Date(), 'dd-MM-yyyy, HH:mm:ss'),
+          orderedTimestamp: Timestamp.fromDate(new Date()).toMillis(),
         };
 
         tx.update(recycledItemDocRef, {
-          amount: recycledItemData.amount - transaction.amount,
+          amount: recycledItemData.amount - itemCartDocData.amount,
         });
 
         await transactionDocRef.set(newTransaction);
@@ -78,6 +97,10 @@ const addTransactions = async (
           id: transactionId,
         });
       });
+    }
+
+    for (const itemCartId of itemCartIds) {
+      await itemCartsRef.doc(itemCartId).delete();
     }
 
     return h

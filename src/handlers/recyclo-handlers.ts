@@ -1,3 +1,7 @@
+import addItemCart from './recyclo-handlers/item-cart-handlers/add-item-cart.js';
+import deleteItemCart from './recyclo-handlers/item-cart-handlers/delete-item-cart.js';
+import getItemCarts from './recyclo-handlers/item-cart-handlers/get-item-carts.js';
+import putItemCartAmount from './recyclo-handlers/item-cart-handlers/put-item-cart-amount.js';
 import login from './recyclo-handlers/login.js';
 import addRecycledGoods from './recyclo-handlers/recycled-goods-handlers/add-recycled-goods.js';
 import deleteRecycledGoods from './recyclo-handlers/recycled-goods-handlers/delete-recycled-goods.js';
@@ -17,18 +21,22 @@ import getWastes from './recyclo-handlers/waste-handlers/get-wastes.js';
 import putWaste from './recyclo-handlers/waste-handlers/put-waste.js';
 
 export {
+  addItemCart,
   addRecycledGoods,
   addTransactions,
   addWaste,
   confirmSellerTransaction,
+  deleteItemCart,
   deleteRecycledGoods,
   deleteTransaction,
   deleteWaste,
   getAllRecycledGoods,
+  getItemCarts,
   getTransactions,
   getWastes,
   login,
   orderCompleteTransaction,
+  putItemCartAmount,
   putRecycledGoods,
   putWaste,
   register,

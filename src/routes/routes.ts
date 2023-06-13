@@ -2,18 +2,22 @@ import type { ReqRefDefaults } from '@hapi/hapi/lib/types/request.js';
 import type { ServerRoute } from '@hapi/hapi/lib/types/route.js';
 import Joi from 'joi';
 import {
+  addItemCart,
   addRecycledGoods,
   addTransactions,
   addWaste,
   confirmSellerTransaction,
+  deleteItemCart,
   deleteRecycledGoods,
   deleteTransaction,
   deleteWaste,
   getAllRecycledGoods,
+  getItemCarts,
   getTransactions,
   getWastes,
   login,
   orderCompleteTransaction,
+  putItemCartAmount,
   putRecycledGoods,
   putWaste,
   register,
@@ -134,6 +138,38 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     method: 'DELETE',
     path: '/api/wastes/{wasteId}',
     handler: deleteWaste,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/item-carts',
+    handler: getItemCarts,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/item-carts',
+    handler: addItemCart,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'PUT',
+    path: '/api/item-carts/{itemCartId}',
+    handler: putItemCartAmount,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'DELETE',
+    path: '/api/item-carts/{itemCartId}',
+    handler: deleteItemCart,
     options: {
       auth: 'jwt-auth-bearer',
     },

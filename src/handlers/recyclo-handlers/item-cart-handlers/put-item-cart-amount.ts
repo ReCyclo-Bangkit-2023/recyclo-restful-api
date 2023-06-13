@@ -31,7 +31,7 @@ const putItemCartAmount = async (
 
     const itemCartDocData = itemCartDocSnapshot.data() as ItemCartDocProps;
 
-    let updatedAmount = 0;
+    let updatedAmount = 1;
 
     if (operation === 'plus') {
       updatedAmount = itemCartDocData.amount + 1;

@@ -3,6 +3,7 @@ import type { ServerRoute } from '@hapi/hapi/lib/types/route.js';
 import Joi from 'joi';
 import {
   addRecycledGoods,
+  addTransactions,
   addWaste,
   confirmSellerTransaction,
   deleteRecycledGoods,
@@ -141,6 +142,14 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     method: 'GET',
     path: '/api/transactions',
     handler: getTransactions,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'POST',
+    path: '/api/transactions',
+    handler: addTransactions,
     options: {
       auth: 'jwt-auth-bearer',
     },

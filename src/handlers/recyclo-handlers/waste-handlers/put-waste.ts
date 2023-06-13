@@ -93,19 +93,21 @@ const putWaste = async (
       recycledId: wasteId,
     });
 
-    const updatedWaste: Omit<WasteDocProps, 'id' | 'userId' | 'recycledType'> =
-      {
-        title: title ? title : (wasteDoc.get('title') as string),
-        price: price ? price : (wasteDoc.get('price') as number),
-        kind: kind ? kind : (wasteDoc.get('kind') as string),
-        amount: amount ? amount : (wasteDoc.get('amount') as number),
-        desc: desc ? desc : (wasteDoc.get('desc') as string),
-        image1: createWasteImgUrl(1),
-        image2: createWasteImgUrl(2),
-        image3: createWasteImgUrl(3),
-        lat: lat ? lat : (wasteDoc.get('lat') as string),
-        long: long ? long : (wasteDoc.get('long') as string),
-      };
+    const updatedWaste: Omit<
+      WasteDocProps,
+      'id' | 'userId' | 'recycledType' | 'sold'
+    > = {
+      title: title ? title : (wasteDoc.get('title') as string),
+      price: price ? price : (wasteDoc.get('price') as number),
+      kind: kind ? kind : (wasteDoc.get('kind') as string),
+      amount: amount ? amount : (wasteDoc.get('amount') as number),
+      desc: desc ? desc : (wasteDoc.get('desc') as string),
+      image1: createWasteImgUrl(1),
+      image2: createWasteImgUrl(2),
+      image3: createWasteImgUrl(3),
+      lat: lat ? lat : (wasteDoc.get('lat') as string),
+      long: long ? long : (wasteDoc.get('long') as string),
+    };
 
     await wasteDocRef.update(updatedWaste);
 

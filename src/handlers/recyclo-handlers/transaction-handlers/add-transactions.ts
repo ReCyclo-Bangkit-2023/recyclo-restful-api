@@ -3,7 +3,6 @@ import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import { format } from 'date-fns';
 import config from '../../../config/config.js';
 import NotFoundError from '../../../exception/not-found-error.js';
-import ValidationError from '../../../exception/validation-error.js';
 import type {
   ItemCartDocProps,
   RecycledItem,
@@ -39,7 +38,8 @@ const addTransactions = async (
       itemCartIds.push(itemCartDoc.id);
     });
 
-    if (itemCartDocsData.length === 0) throw new Error('item cart Anda kosong');
+    if (itemCartDocsData.length === 0)
+      throw new NotFoundError('item cart Anda kosong');
 
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
@@ -113,14 +113,14 @@ const addTransactions = async (
       })
       .code(201);
   } catch (error) {
-    if (error instanceof ValidationError) {
+    if (error instanceof NotFoundError) {
       return h
         .response({
           error: true,
           message: error.message,
           data: {},
         })
-        .code(400);
+        .code(404);
     }
 
     return h

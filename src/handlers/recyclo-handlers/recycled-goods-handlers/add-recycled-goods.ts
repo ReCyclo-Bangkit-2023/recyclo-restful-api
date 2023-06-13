@@ -85,6 +85,7 @@ const addRecycledGoods = async (
       userId,
       title,
       price,
+      sold: 0,
       kind,
       amount,
       image1: createRecycledGoodsImgUrl(1),

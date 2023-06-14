@@ -13,6 +13,7 @@ import {
   deleteWaste,
   getAllRecycledGoods,
   getItemCarts,
+  getRecycledItems,
   getTransactions,
   getWastes,
   login,
@@ -53,6 +54,11 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
       },
     },
     handler: login,
+  },
+  {
+    method: 'GET',
+    path: '/api/recycled-items',
+    handler: getRecycledItems,
   },
   {
     method: 'GET',

@@ -23,6 +23,39 @@ const addItemCart = async (
       recycledId: string;
     };
 
+    const itemCartsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_CARTS_COLLECTION
+    );
+
+    const itemCartDocsSnapshot = await itemCartsRef
+      .where('userId', '==', userId)
+      .where('recycledId', '==', recycledId)
+      .get();
+
+    const itemCartDocsData: ItemCartDocProps[] = [];
+
+    itemCartDocsSnapshot.forEach((itemCartDoc) => {
+      itemCartDocsData.push(itemCartDoc.data() as ItemCartDocProps);
+    });
+
+    const itemCartDocData = itemCartDocsData[0];
+
+    if (itemCartDocsSnapshot.size === 1) {
+      await itemCartsRef.doc(itemCartDocData.id).update({
+        amount: itemCartDocData.amount + 1,
+      });
+
+      return h
+        .response({
+          error: false,
+          message: 'success',
+          data: {
+            id: itemCartDocData.id,
+          },
+        })
+        .code(200);
+    }
+
     // Get recycled item data
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
@@ -52,10 +85,6 @@ const addItemCart = async (
     const userDocData = userDocSnapshot.data() as UserDataDocProps;
 
     // Create new item cart
-    const itemCartsRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_CARTS_COLLECTION
-    );
-
     const itemCartDocRef = itemCartsRef.doc();
     const itemCartId = itemCartDocRef.id;
 

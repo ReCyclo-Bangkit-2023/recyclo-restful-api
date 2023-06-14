@@ -23,7 +23,6 @@ const register = async (
 
   const usersRefs = db.collection('users');
   const userDocRef = usersRefs.doc();
-
   const userId = userDocRef.id;
 
   try {

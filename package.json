@@ -26,6 +26,7 @@
   "private": "true",
   "description": "ReCyclo RESTful API",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
     "start": "NODE_ENV=production node dist/server.js",

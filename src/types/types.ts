@@ -86,6 +86,7 @@ export interface ItemCartDocProps {
   recycledId: string;
   image: string;
   title: string;
+  stock: number;
   price: number;
   city: string;
   amount: number;

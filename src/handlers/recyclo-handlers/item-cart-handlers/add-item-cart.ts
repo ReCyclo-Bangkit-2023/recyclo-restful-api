@@ -65,6 +65,7 @@ const addItemCart = async (
       recycledId,
       image: recycledItemDocData.image1,
       title: recycledItemDocData.title,
+      stock: recycledItemDocData.amount,
       price: recycledItemDocData.price,
       city: userDocData.city,
       amount: 1,

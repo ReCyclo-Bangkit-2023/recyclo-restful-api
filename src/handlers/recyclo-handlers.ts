@@ -7,6 +7,7 @@ import addRecycledGoods from './recyclo-handlers/recycled-goods-handlers/add-rec
 import deleteRecycledGoods from './recyclo-handlers/recycled-goods-handlers/delete-recycled-goods.js';
 import getAllRecycledGoods from './recyclo-handlers/recycled-goods-handlers/get-all-recycled-goods.js';
 import putRecycledGoods from './recyclo-handlers/recycled-goods-handlers/put-recycled-goods.js';
+import getRecycledItems from './recyclo-handlers/recycled-items-handler/get-recycled-items.js';
 import register from './recyclo-handlers/register.js';
 import addTransactions from './recyclo-handlers/transaction-handlers/add-transactions.js';
 import deleteTransaction from './recyclo-handlers/transaction-handlers/delete-transaction.js';
@@ -32,6 +33,7 @@ export {
   deleteWaste,
   getAllRecycledGoods,
   getItemCarts,
+  getRecycledItems,
   getTransactions,
   getWastes,
   login,

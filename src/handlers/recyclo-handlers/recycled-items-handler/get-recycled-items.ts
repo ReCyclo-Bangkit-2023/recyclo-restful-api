@@ -1,7 +1,7 @@
 import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import config from '../../../config/config.js';
-import type { RecycledItem } from '../../../types/types.js';
+import type { RecycledItem, UserDataDocProps } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -24,14 +24,22 @@ const getRecycledItems = async (
 
   const recycledItemData: (RecycledItem & {
     key: number;
+    sellerDetails: Omit<UserDataDocProps, 'password'>;
   })[] = [];
 
-  recycledItemDocsData.forEach((transactionDoc, idx) => {
+  const usersRef = firestoreDB.collection('users');
+
+  for (const [idx, recycledItemDocData] of recycledItemDocsData.entries()) {
+    const { password: _, ...userDocData } = (
+      await usersRef.doc(recycledItemDocData.userId).get()
+    ).data() as UserDataDocProps;
+
     recycledItemData.push({
       key: idx + 1,
-      ...transactionDoc,
+      sellerDetails: userDocData,
+      ...recycledItemDocData,
     });
-  });
+  }
 
   return h.response({
     error: false,

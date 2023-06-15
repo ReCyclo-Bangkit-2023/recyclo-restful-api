@@ -44,6 +44,18 @@ const putItemCartAmount = async (
         await itemCartDocRef.update({
           amount: updatedAmount,
         });
+      } else {
+        await itemCartDocRef.delete();
+
+        return h
+          .response({
+            error: false,
+            message: 'success',
+            data: {
+              amount: 0,
+            },
+          })
+          .code(200);
       }
     } else {
       throw new Error('operasi jumlah amount tidak valid');

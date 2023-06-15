@@ -28,7 +28,6 @@ const getRecycledItems = async (
   });
 
   const recycledItemData: (RecycledItem & {
-    key: number;
     sellerDetails: Omit<UserDataDocProps, 'password'>;
   })[] = [];
 
@@ -43,16 +42,14 @@ const getRecycledItems = async (
         .startsWith(name.toLowerCase().split(' ').join(''))
   );
 
-  for (const [
-    idx,
-    recycledItemDocData,
-  ] of filteredRecycledItemDocsData.entries()) {
+  for (const recycledItemDocData of filteredRecycledItemDocsData) {
     const { password: _, ...userDocData } = (
       await usersRef.doc(recycledItemDocData.userId).get()
     ).data() as UserDataDocProps;
 
+    if (recycledItemDocData.userId === userDocData.userId) continue;
+
     recycledItemData.push({
-      key: idx + 1,
       sellerDetails: userDocData,
       ...recycledItemDocData,
     });
@@ -74,11 +71,23 @@ const getRecycledItems = async (
       .code(200);
   }
 
+  const recycledItems: (RecycledItem & {
+    key: number;
+    sellerDetails: Omit<UserDataDocProps, 'password'>;
+  })[] = [];
+
+  recycledItemData.forEach((recycledItem, idx) => {
+    recycledItems.push({
+      key: idx + 1,
+      ...recycledItem,
+    });
+  });
+
   return h
     .response({
       error: false,
       message: 'success',
-      data: recycledItemData,
+      data: recycledItems,
     })
     .code(200);
 };

@@ -85,21 +85,32 @@ export const orderCompleteTransaction = async (
     const transactionDocData =
       transactionDocSnapshot.data() as TransactionDocProps;
 
+    const transactionRecycledItems = transactionDocData.recycledItems;
+
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
     );
 
-    const recycledItemDocRef = recycledItemsRef.doc(
-      transactionDocData.recycledId
-    );
+    for (const transactionRecycledItem of transactionRecycledItems) {
+      if (transactionRecycledItem.statusItemTransaction === 'rejected')
+        continue;
 
-    const recycledItemDocSnapshot = await recycledItemDocRef.get();
+      const recycledItem = transactionRecycledItem.recycledItem;
+      const recycledItemDocRef = recycledItemsRef.doc(recycledItem.id);
+      const recycledItemDocSnapshot = await recycledItemDocRef.get();
 
-    const recycledItemDocData = recycledItemDocSnapshot.data() as RecycledItem;
+      if (!recycledItemDocSnapshot.exists)
+        throw new NotFoundError(
+          'id barang atau sampah daur ulang tidak ditemukan'
+        );
 
-    await recycledItemDocRef.update({
-      sold: recycledItemDocData.sold + transactionDocData.amount,
-    });
+      const recycledItemDocData =
+        recycledItemDocSnapshot.data() as RecycledItem;
+
+      await recycledItemDocRef.update({
+        sold: recycledItemDocData.sold + transactionRecycledItem.itemCartAmount,
+      });
+    }
 
     await transactionDocRef.update({
       statusTransaction: 'done',

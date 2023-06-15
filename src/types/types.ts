@@ -64,9 +64,10 @@ export type PutWasteReqBodyProps = AddWasteReqBodyProps;
 
 export interface TransactionDocProps {
   id: string;
-  userId: string;
+  userDetails: Omit<UserDataDocProps, 'password'>;
   recycledItems: {
     recycledItem: RecycledItem;
+    sellerDetails: Omit<UserDataDocProps, 'password'>;
     itemCartAmount: number;
     statusItemTransaction: 'accepted' | 'rejected';
     message: string;

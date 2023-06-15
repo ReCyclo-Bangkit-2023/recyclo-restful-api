@@ -49,14 +49,24 @@ const addTransactions = async (
       config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
     );
 
-    const newTransactionIds: { id: string }[] = [];
+    const transactionDocRef = transactionsRef.doc();
+    const transactionId = transactionDocRef.id;
+
+    const newTransaction: TransactionDocProps = {
+      id: transactionId,
+      userId,
+      recycledItems: [],
+      totalPrice: 1000,
+      totalAmount: 0,
+      statusTransaction: 'waiting',
+      orderedDate: '',
+      orderedTimestamp: 0,
+    };
 
     for (const itemCartDocData of itemCartDocsData) {
       const recycledItemDocRef = recycledItemsRef.doc(
         itemCartDocData.recycledId
       );
-
-      const recycledItemId = recycledItemDocRef.id;
 
       await firestoreDB.runTransaction(async (tx) => {
         const recycledItemDocSnapshot = await tx.get(recycledItemDocRef);
@@ -71,32 +81,30 @@ const addTransactions = async (
         const transactionAmountExceeded =
           recycledItemData.amount < itemCartDocData.amount;
 
-        if (transactionAmountExceeded) return;
+        if (transactionAmountExceeded) {
+          newTransaction.recycledItems.push({
+            recycledItem: recycledItemData,
+            itemCartAmount: itemCartDocData.amount,
+            statusItemTransaction: 'rejected',
+            message: `stok tidak mencukupi. stok terkini ${recycledItemData.amount}`,
+          });
+          return;
+        }
 
-        const transactionDocRef = transactionsRef.doc();
-        const transactionId = transactionDocRef.id;
+        newTransaction.recycledItems.push({
+          recycledItem: recycledItemData,
+          itemCartAmount: itemCartDocData.amount,
+          statusItemTransaction: 'accepted',
+          message: 'Stok tersedia',
+        });
 
-        const newTransaction: TransactionDocProps = {
-          id: transactionId,
-          userId,
-          recycledId: recycledItemId,
-          image: recycledItemData.image1,
-          title: recycledItemData.title,
-          totalPrice: itemCartDocData.amount * recycledItemData.price + 1000,
-          amount: itemCartDocData.amount,
-          statusTransaction: 'waiting',
-          orderedDate: format(new Date(), 'dd-MM-yyyy, HH:mm:ss'),
-          orderedTimestamp: Timestamp.fromDate(new Date()).toMillis(),
-        };
+        newTransaction.totalPrice +=
+          recycledItemData.price * itemCartDocData.amount;
+
+        newTransaction.totalAmount += itemCartDocData.amount;
 
         tx.update(recycledItemDocRef, {
           amount: recycledItemData.amount - itemCartDocData.amount,
-        });
-
-        await transactionDocRef.set(newTransaction);
-
-        newTransactionIds.push({
-          id: transactionId,
         });
       });
     }
@@ -105,11 +113,30 @@ const addTransactions = async (
       await itemCartsRef.doc(itemCartId).delete();
     }
 
+    const transactionsRejected = newTransaction.recycledItems.every(
+      ({ statusItemTransaction }) => statusItemTransaction === 'rejected'
+    );
+
+    if (transactionsRejected) {
+      return h
+        .response({
+          error: false,
+          message: 'semua stok barang atau sampah daur ulang tidak mencukupi',
+          data: {},
+        })
+        .code(204);
+    }
+
+    newTransaction.orderedDate = format(new Date(), 'dd-MM-yyyy, HH:mm:ss');
+    newTransaction.orderedTimestamp = Timestamp.fromDate(new Date()).toMillis();
+
+    await transactionDocRef.set(newTransaction);
+
     return h
       .response({
         error: false,
         message: 'success',
-        data: newTransactionIds,
+        data: newTransaction,
       })
       .code(201);
   } catch (error) {

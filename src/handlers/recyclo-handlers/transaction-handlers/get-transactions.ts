@@ -17,15 +17,12 @@ const getTransactions = async (
     config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
   );
 
-  const transactionSnapshot = await transactionsRef
-    .where('userId', '==', userId)
-    .get();
+  const transactionSnapshot = await transactionsRef.get();
 
   const transactionDocsData: TransactionDocProps[] = [];
 
   transactionSnapshot.forEach((transactionDoc) => {
     const transactionDocData = transactionDoc.data() as TransactionDocProps;
-
     transactionDocsData.push(transactionDocData);
   });
 
@@ -33,12 +30,16 @@ const getTransactions = async (
     key: number;
   })[] = [];
 
-  transactionDocsData.forEach((transactionDoc, idx) => {
-    transactionData.push({
-      key: idx + 1,
-      ...transactionDoc,
+  transactionDocsData
+    .filter(
+      (transactionDocData) => transactionDocData.userDetails.userId === userId
+    )
+    .forEach((transactionDoc, idx) => {
+      transactionData.push({
+        key: idx + 1,
+        ...transactionDoc,
+      });
     });
-  });
 
   return h.response({
     error: false,

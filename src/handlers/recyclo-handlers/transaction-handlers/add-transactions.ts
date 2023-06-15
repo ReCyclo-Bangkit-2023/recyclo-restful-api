@@ -7,6 +7,7 @@ import type {
   ItemCartDocProps,
   RecycledItem,
   TransactionDocProps,
+  UserDataDocProps,
 } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
@@ -52,9 +53,15 @@ const addTransactions = async (
     const transactionDocRef = transactionsRef.doc();
     const transactionId = transactionDocRef.id;
 
+    const usersRef = firestoreDB.collection('users');
+    const customerDocRef = usersRef.doc(userId);
+    const { password: _, ...customerDocData } = (
+      await customerDocRef.get()
+    ).data() as UserDataDocProps;
+
     const newTransaction: TransactionDocProps = {
       id: transactionId,
-      userId,
+      userDetails: customerDocData,
       recycledItems: [],
       totalPrice: 1000,
       totalAmount: 0,
@@ -81,9 +88,14 @@ const addTransactions = async (
         const transactionAmountExceeded =
           recycledItemData.amount < itemCartDocData.amount;
 
+        const { password: _, ...sellerDocData } = (
+          await usersRef.doc(recycledItemData.userId).get()
+        ).data() as UserDataDocProps;
+
         if (transactionAmountExceeded) {
           newTransaction.recycledItems.push({
             recycledItem: recycledItemData,
+            sellerDetails: sellerDocData,
             itemCartAmount: itemCartDocData.amount,
             statusItemTransaction: 'rejected',
             message: `stok tidak mencukupi. stok terkini ${recycledItemData.amount}`,
@@ -92,7 +104,11 @@ const addTransactions = async (
         }
 
         newTransaction.recycledItems.push({
-          recycledItem: recycledItemData,
+          recycledItem: {
+            ...recycledItemData,
+            amount: recycledItemData.amount - itemCartDocData.amount,
+          },
+          sellerDetails: sellerDocData,
           itemCartAmount: itemCartDocData.amount,
           statusItemTransaction: 'accepted',
           message: 'Stok tersedia',

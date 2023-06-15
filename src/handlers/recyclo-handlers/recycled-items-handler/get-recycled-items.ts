@@ -6,9 +6,14 @@ import type { RecycledItem, UserDataDocProps } from '../../../types/types.js';
 const firestoreDB = new Firestore();
 
 const getRecycledItems = async (
-  _: Request<ReqRefDefaults>,
+  request: Request<ReqRefDefaults>,
   h: ResponseToolkit<ReqRefDefaults>
 ) => {
+  const { name = '', bestseller = '0' } = request.query as {
+    name: string;
+    bestseller: string;
+  };
+
   const recycledItemsRef = firestoreDB.collection(
     config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
   );
@@ -29,7 +34,19 @@ const getRecycledItems = async (
 
   const usersRef = firestoreDB.collection('users');
 
-  for (const [idx, recycledItemDocData] of recycledItemDocsData.entries()) {
+  const filteredRecycledItemDocsData = recycledItemDocsData.filter(
+    (recycledItemDocData) =>
+      recycledItemDocData.title
+        .toLowerCase()
+        .split(' ')
+        .join('')
+        .startsWith(name.toLowerCase().split(' ').join(''))
+  );
+
+  for (const [
+    idx,
+    recycledItemDocData,
+  ] of filteredRecycledItemDocsData.entries()) {
     const { password: _, ...userDocData } = (
       await usersRef.doc(recycledItemDocData.userId).get()
     ).data() as UserDataDocProps;
@@ -38,6 +55,14 @@ const getRecycledItems = async (
       key: idx + 1,
       sellerDetails: userDocData,
       ...recycledItemDocData,
+    });
+  }
+
+  if (bestseller === '1') {
+    return h.response({
+      error: false,
+      message: 'success',
+      data: recycledItemData.sort((a, b) => b.sold - a.sold).slice(0, 4),
     });
   }
 

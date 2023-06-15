@@ -59,18 +59,28 @@ const getRecycledItems = async (
   }
 
   if (bestseller === '1') {
-    return h.response({
-      error: false,
-      message: 'success',
-      data: recycledItemData.sort((a, b) => b.sold - a.sold).slice(0, 4),
-    });
+    return h
+      .response({
+        error: false,
+        message: 'success',
+        data: recycledItemData
+          .sort((a, b) => b.sold - a.sold)
+          .map((recycledItem, idx) => ({
+            ...recycledItem,
+            key: idx + 1,
+          }))
+          .slice(0, 4),
+      })
+      .code(200);
   }
 
-  return h.response({
-    error: false,
-    message: 'success',
-    data: recycledItemData,
-  });
+  return h
+    .response({
+      error: false,
+      message: 'success',
+      data: recycledItemData,
+    })
+    .code(200);
 };
 
 export default getRecycledItems;

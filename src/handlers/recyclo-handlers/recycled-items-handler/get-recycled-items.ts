@@ -9,6 +9,10 @@ const getRecycledItems = async (
   request: Request<ReqRefDefaults>,
   h: ResponseToolkit<ReqRefDefaults>
 ) => {
+  const { userId } = request.auth.credentials as {
+    userId: string;
+  };
+
   const { name = '', bestseller = '0' } = request.query as {
     name: string;
     bestseller: string;
@@ -47,7 +51,7 @@ const getRecycledItems = async (
       await usersRef.doc(recycledItemDocData.userId).get()
     ).data() as UserDataDocProps;
 
-    if (recycledItemDocData.userId === userDocData.userId) continue;
+    if (recycledItemDocData.userId === userId) continue;
 
     recycledItemData.push({
       sellerDetails: userDocData,

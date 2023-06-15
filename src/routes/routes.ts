@@ -59,6 +59,9 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
     method: 'GET',
     path: '/api/recycled-items',
     handler: getRecycledItems,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
   },
   {
     method: 'GET',

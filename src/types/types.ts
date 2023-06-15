@@ -65,20 +65,23 @@ export type PutWasteReqBodyProps = AddWasteReqBodyProps;
 export interface TransactionDocProps {
   id: string;
   userId: string;
-  recycledId: string;
-  image: string;
-  title: string;
+  recycledItems: {
+    recycledItem: RecycledItem;
+    itemCartAmount: number;
+    statusItemTransaction: 'accepted' | 'rejected';
+    message: string;
+  }[];
   totalPrice: number;
-  amount: number;
+  totalAmount: number;
   statusTransaction: 'waiting' | 'sending' | 'done';
   orderedDate: string;
   orderedTimestamp: number;
 }
 
-export type AddTransactionReqBodyProps = Pick<
-  TransactionDocProps,
-  'recycledId' | 'amount'
->;
+export interface AddTransactionReqBodyProps
+  extends Pick<TransactionDocProps, 'totalAmount'> {
+  recycledId: string;
+}
 
 export interface ItemCartDocProps {
   id: string;

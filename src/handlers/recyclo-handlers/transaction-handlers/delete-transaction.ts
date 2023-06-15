@@ -33,17 +33,26 @@ const deleteTransaction = async (
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
     );
 
-    const recycledItemDocRef = recycledItemsRef.doc(
-      transactionDocData.recycledId
-    );
+    const transactionRecycledItems = transactionDocData.recycledItems;
 
-    const recycledItemDocSnapshot = await recycledItemDocRef.get();
+    for (const transactionRecycledItem of transactionRecycledItems) {
+      if (transactionRecycledItem.statusItemTransaction === 'rejected')
+        continue;
 
-    const recycledItemDocData = recycledItemDocSnapshot.data() as RecycledItem;
+      const recycledItemData = transactionRecycledItem.recycledItem;
 
-    await recycledItemDocRef.update({
-      amount: recycledItemDocData.amount + transactionDocData.amount,
-    });
+      const recycledItemDocRef = recycledItemsRef.doc(recycledItemData.id);
+
+      const recycledItemDocSnapshot = await recycledItemDocRef.get();
+
+      const recycledItemDocData =
+        recycledItemDocSnapshot.data() as RecycledItem;
+
+      await recycledItemDocRef.update({
+        amount:
+          recycledItemDocData.amount + transactionRecycledItem.itemCartAmount,
+      });
+    }
 
     await transactionDocRef.delete();
 

@@ -1,30 +1,73 @@
 {
   "name": "recyclo-restful-api",
   "author": "Syahda Romansyah <syahdarom@gmail.com>",
+  "contributors": [
+    {
+      "name": "Adisti Dwi Susanti",
+      "email": "adistids08@gmail.com"
+    },
+    {
+      "name": "Adisti Dwi Susanti",
+      "email": "c208dky4336@bangkit.academy"
+    },
+    {
+      "name": "Rahmat Sunjani",
+      "email": "klikrahmatsunjani@gmail.com"
+    },
+    {
+      "name": "Rahmat Sunjani",
+      "email": "c289dsx3135@bangkit.academy"
+    },
+    {
+      "name": "Syahda Romansyah",
+      "email": "c360dsx1645@bangkit.academy"
+    }
+  ],
   "private": "true",
   "description": "ReCyclo RESTful API",
   "type": "module",
+  "license": "MIT",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js",
+    "start": "NODE_ENV=production node dist/server.js",
     "start-dev": "nodemon dist/server.js",
     "lint": "eslint --ext .js,.ts .",
     "format": "prettier -w \"**/*.{js,ts,json}\"",
-    "format-c": "prettier -c \"**/*.{js,ts,json}\""
+    "format-c": "prettier -c \"**/*.{js,ts,json}\"",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint --fix .",
+      "prettier -w"
+    ]
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.0",
     "@types/hapi": "^18.0.8",
     "@types/node": "^20.2.1",
+    "@types/validator": "^13.7.17",
     "@typescript-eslint/eslint-plugin": "^5.59.6",
     "@typescript-eslint/parser": "^5.59.6",
     "eslint": "^8.40.0",
     "eslint-config-prettier": "^8.8.0",
     "eslint-plugin-unused-imports": "^2.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^13.2.2",
     "nodemon": "^2.0.22",
     "prettier": "2.8.8",
     "typescript": "^5.0.4"
   },
   "dependencies": {
-    "@hapi/hapi": "^21.3.2"
+    "@google-cloud/firestore": "^6.5.0",
+    "@google-cloud/storage": "^6.10.1",
+    "@hapi/boom": "^10.0.1",
+    "@hapi/hapi": "^21.3.2",
+    "@hapi/jwt": "^3.2.0",
+    "bcrypt": "^5.1.0",
+    "date-fns": "^2.30.0",
+    "nanoid": "^4.0.2",
+    "sharp": "^0.32.1",
+    "validator": "^13.9.0"
   }
 }

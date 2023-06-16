@@ -8,7 +8,6 @@
     "target": "ESNext",
     "sourceMap": true,
     "outDir": "dist",
-    "watch": true,
     "incremental": true
   },
   "buildOptions": {

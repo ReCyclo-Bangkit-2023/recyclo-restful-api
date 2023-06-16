@@ -9,3 +9,5 @@
 *.config.ts
 *.config.cts
 *.config.mts
+
+/dist/

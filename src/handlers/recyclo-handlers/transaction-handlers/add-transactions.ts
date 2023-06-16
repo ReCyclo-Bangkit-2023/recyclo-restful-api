@@ -6,8 +6,7 @@ import NotFoundError from '../../../exception/not-found-error.js';
 import type {
   ItemCartDocProps,
   RecycledItem,
-  TransactionClientDocProps,
-  TransactionSellerDocProps,
+  TransactionDocProps,
   UserDataDocProps,
 } from '../../../types/types.js';
 
@@ -47,32 +46,29 @@ const addTransactions = async (
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
     );
 
-    const transactionClientsRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTION_CLIENTS_COLLECTION
+    const transactionsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
     );
 
-    const transactionClientDocRef = transactionClientsRef.doc();
-    const transactionClientId = transactionClientDocRef.id;
+    const transactionDocRef = transactionsRef.doc();
+    const transactionId = transactionDocRef.id;
 
-    const usersRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_USERS_COLLECTION
-    );
-
-    const clientDocRef = usersRef.doc(userId);
-
-    const { password: _, ...clientDocData } = (
-      await clientDocRef.get()
+    const usersRef = firestoreDB.collection('users');
+    const customerDocRef = usersRef.doc(userId);
+    const { password: _, ...customerDocData } = (
+      await customerDocRef.get()
     ).data() as UserDataDocProps;
 
-    const newTransactionClient: TransactionClientDocProps = {
-      id: transactionClientId,
-      userDetails: clientDocData,
-      transactionItemsDetails: [],
+    const newTransaction: TransactionDocProps = {
+      id: transactionId,
+      userDetails: customerDocData,
+      recycledItems: [],
+      totalPrice: 1000,
+      totalAmount: 0,
+      statusTransaction: 'waiting',
       orderedDate: '',
       orderedTimestamp: 0,
     };
-
-    const newTransactionSellers: TransactionSellerDocProps[] = [];
 
     for (const itemCartDocData of itemCartDocsData) {
       const recycledItemDocRef = recycledItemsRef.doc(
@@ -92,130 +88,40 @@ const addTransactions = async (
         const transactionAmountExceeded =
           recycledItemData.amount < itemCartDocData.amount;
 
-        // Get seller user detail
         const { password: _, ...sellerDocData } = (
           await usersRef.doc(recycledItemData.userId).get()
         ).data() as UserDataDocProps;
 
-        const sameSellerIdx =
-          newTransactionClient.transactionItemsDetails.findIndex(
-            (transactionItemDetails) =>
-              transactionItemDetails.sellerDetails.userId ===
-              recycledItemData.userId
-          );
-
-        const sameSellerTxIdx = newTransactionSellers.findIndex(
-          (newTransactionSeller) =>
-            newTransactionSeller.sellerDetails.userId ===
-            recycledItemData.userId
-        );
-
-        if (sameSellerIdx && transactionAmountExceeded) {
-          newTransactionClient.transactionItemsDetails[
-            sameSellerIdx
-          ].transactionItemDetails.push({
+        if (transactionAmountExceeded) {
+          newTransaction.recycledItems.push({
             recycledItem: recycledItemData,
+            sellerDetails: sellerDocData,
             itemCartAmount: itemCartDocData.amount,
             statusItemTransaction: 'rejected',
             message: `stok tidak mencukupi. stok terkini ${recycledItemData.amount}`,
           });
-        } else if (sameSellerIdx) {
-          newTransactionClient.transactionItemsDetails[
-            sameSellerIdx
-          ].transactionItemDetails.push({
-            recycledItem: {
-              ...recycledItemData,
-              amount: recycledItemData.amount - itemCartDocData.amount,
-            },
-            itemCartAmount: itemCartDocData.amount,
-            statusItemTransaction: 'accepted',
-            message: 'Stok tersedia',
-          });
+          return;
+        }
 
-          newTransactionClient.transactionItemsDetails[
-            sameSellerIdx
-          ].transactionPrice +=
-            recycledItemData.price * itemCartDocData.amount + 1000;
-
-          newTransactionClient.transactionItemsDetails[
-            sameSellerIdx
-          ].transactionTotalAmount += itemCartDocData.amount;
-
-          tx.update(recycledItemDocRef, {
+        newTransaction.recycledItems.push({
+          recycledItem: {
+            ...recycledItemData,
             amount: recycledItemData.amount - itemCartDocData.amount,
-          });
-        } else if (transactionAmountExceeded) {
-          newTransactionClient.transactionItemsDetails.push({
-            transactionId: '',
-            sellerDetails: sellerDocData,
-            transactionItemDetails: [
-              {
-                recycledItem: recycledItemData,
-                itemCartAmount: itemCartDocData.amount,
-                statusItemTransaction: 'rejected',
-                message: `stok tidak mencukupi. stok terkini ${recycledItemData.amount}`,
-              },
-            ],
-            statusTransaction: 'waiting',
-            transactionPrice: 0,
-            transactionTotalAmount: 0,
-          });
-        } else {
-          newTransactionClient.transactionItemsDetails.push({
-            transactionId: '',
-            sellerDetails: sellerDocData,
-            transactionItemDetails: [
-              {
-                recycledItem: {
-                  ...recycledItemData,
-                  amount: recycledItemData.amount - itemCartDocData.amount,
-                },
-                itemCartAmount: itemCartDocData.amount,
-                statusItemTransaction: 'accepted',
-                message: `stok tersedia`,
-              },
-            ],
-            statusTransaction: 'waiting',
-            transactionPrice: 0,
-            transactionTotalAmount: 0,
-          });
-        }
+          },
+          sellerDetails: sellerDocData,
+          itemCartAmount: itemCartDocData.amount,
+          statusItemTransaction: 'accepted',
+          message: 'Stok tersedia',
+        });
 
-        if (sameSellerTxIdx) {
-          newTransactionSellers[sameSellerTxIdx].transactionItemDetails.push({
-            recycledItem: {
-              ...recycledItemData,
-              amount: recycledItemData.amount - itemCartDocData.amount,
-            },
-            itemCartAmount: itemCartDocData.amount,
-          });
+        newTransaction.totalPrice +=
+          recycledItemData.price * itemCartDocData.amount;
 
-          newTransactionSellers[sameSellerTxIdx].transactionPrice +=
-            recycledItemData.amount * itemCartDocData.amount + 1000;
+        newTransaction.totalAmount += itemCartDocData.amount;
 
-          newTransactionSellers[sameSellerTxIdx].transactionTotalAmount +=
-            itemCartDocData.amount;
-        } else {
-          newTransactionSellers.push({
-            id: '',
-            userDetails: clientDocData,
-            sellerDetails: sellerDocData,
-            transactionItemDetails: [
-              {
-                recycledItem: {
-                  ...recycledItemData,
-                  amount: recycledItemData.amount - itemCartDocData.amount,
-                },
-                itemCartAmount: itemCartDocData.amount,
-              },
-            ],
-            statusTransaction: 'waiting',
-            transactionPrice: 0,
-            transactionTotalAmount: 0,
-            orderedDate: '',
-            orderedTimestamp: 0,
-          });
-        }
+        tx.update(recycledItemDocRef, {
+          amount: recycledItemData.amount - itemCartDocData.amount,
+        });
       });
     }
 
@@ -223,63 +129,30 @@ const addTransactions = async (
       await itemCartsRef.doc(itemCartId).delete();
     }
 
-    const transactionSellersRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTION_SELLERS_COLLECTION
+    const transactionsRejected = newTransaction.recycledItems.every(
+      ({ statusItemTransaction }) => statusItemTransaction === 'rejected'
     );
 
-    const orderedDate = format(new Date(), 'dd-MM-yyyy, HH:mm:ss');
-    const orderedTimestamp = Timestamp.fromDate(new Date()).toMillis();
-
-    for (const newTransactionSeller of newTransactionSellers) {
-      const transactionSellerDocRef = transactionSellersRef.doc();
-      const transactionSellerDocId = transactionSellerDocRef.id;
-      newTransactionSeller.id = transactionSellerDocId;
-      newTransactionSeller.orderedDate = orderedDate;
-      newTransactionSeller.orderedTimestamp = orderedTimestamp;
-      await transactionSellerDocRef.set(newTransactionSeller);
-
-      newTransactionClient.transactionItemsDetails.map(
-        (transactionItemDetails) => {
-          const sellerId = transactionItemDetails.sellerDetails.userId;
-          const newTransactionSellerId =
-            newTransactionSeller.sellerDetails.userId;
-
-          if (sellerId === newTransactionSellerId) {
-            transactionItemDetails.transactionId = transactionSellerDocId;
-          }
-        }
-      );
-    }
-
-    const transactionsCanceled =
-      newTransactionClient.transactionItemsDetails.every(
-        (transactionItemDetails) =>
-          transactionItemDetails.transactionItemDetails.every(
-            (transactionItemDetails) =>
-              transactionItemDetails.statusItemTransaction === 'rejected'
-          )
-      );
-
-    if (transactionsCanceled) {
+    if (transactionsRejected) {
       return h
         .response({
           error: false,
           message: 'semua stok barang atau sampah daur ulang tidak mencukupi',
           data: {},
         })
-        .code(200);
+        .code(204);
     }
 
-    newTransactionClient.orderedDate = orderedDate;
-    newTransactionClient.orderedTimestamp = orderedTimestamp;
+    newTransaction.orderedDate = format(new Date(), 'dd-MM-yyyy, HH:mm:ss');
+    newTransaction.orderedTimestamp = Timestamp.fromDate(new Date()).toMillis();
 
-    await transactionClientDocRef.set(newTransactionClient);
+    await transactionDocRef.set(newTransaction);
 
     return h
       .response({
         error: false,
         message: 'success',
-        data: newTransactionClient,
+        data: newTransaction,
       })
       .code(201);
   } catch (error) {

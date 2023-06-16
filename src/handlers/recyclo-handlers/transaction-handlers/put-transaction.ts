@@ -4,8 +4,7 @@ import config from '../../../config/config.js';
 import NotFoundError from '../../../exception/not-found-error.js';
 import type {
   RecycledItem,
-  TransactionClientDocProps,
-  TransactionSellerDocProps,
+  TransactionDocProps,
 } from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
@@ -19,75 +18,20 @@ export const confirmSellerTransaction = async (
       transactionId: string;
     };
 
-    const transactionClientRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTION_CLIENTS_COLLECTION
+    const transactionsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
     );
 
-    const transactionClientSnapshot = await transactionClientRef.get();
+    const transactionDocRef = transactionsRef.doc(transactionId);
 
-    const transactionClientDocs: TransactionClientDocProps[] = [];
+    const transactionDocSnapshot = await transactionDocRef.get();
 
-    transactionClientSnapshot.forEach((transactionClientDoc) => {
-      transactionClientDocs.push(
-        transactionClientDoc.data() as TransactionClientDocProps
-      );
+    if (!transactionDocSnapshot.exists)
+      throw new NotFoundError('id transaksi tidak ditemukan');
+
+    await transactionDocRef.update({
+      statusTransaction: 'sending',
     });
-
-    const transactionSellerRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTION_SELLERS_COLLECTION
-    );
-
-    const transactionSellerSnapshot = await transactionSellerRef.get();
-
-    const transactionSellerDocs: TransactionSellerDocProps[] = [];
-
-    transactionSellerSnapshot.forEach((transactionSellerDoc) => {
-      transactionSellerDocs.push(
-        transactionSellerDoc.data() as TransactionSellerDocProps
-      );
-    });
-
-    const transactionClientDoc = transactionClientDocs.find(
-      (transactionClientDoc) => {
-        const isExist = transactionClientDoc.transactionItemsDetails.findIndex(
-          (transactionItemDetails) =>
-            transactionItemDetails.transactionId === transactionId
-        );
-
-        if (isExist) return true;
-        return false;
-      }
-    );
-
-    const transactionSellerDoc = transactionSellerDocs.find(
-      (transactionSellerDoc) => transactionSellerDoc.id === transactionId
-    );
-
-    if (
-      transactionClientDoc === undefined ||
-      transactionSellerDoc === undefined
-    )
-      throw new NotFoundError('id transaksi tidak ada');
-
-    transactionClientDoc.transactionItemsDetails.map(
-      (transactionItemDetails) => {
-        return {
-          ...transactionItemDetails,
-          statusTransaction: (transactionItemDetails.statusTransaction =
-            'sending'),
-        };
-      }
-    );
-
-    await transactionClientRef
-      .doc(transactionClientDoc.id)
-      .set(transactionClientDoc);
-
-    transactionSellerDoc.statusTransaction = 'sending';
-
-    await transactionSellerRef
-      .doc(transactionSellerDoc.id)
-      .set(transactionSellerDoc);
 
     return h.response({
       error: false,
@@ -127,110 +71,48 @@ export const orderCompleteTransaction = async (
       transactionId: string;
     };
 
-    const transactionClientRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTION_CLIENTS_COLLECTION
+    const transactionsRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
     );
 
-    const transactionClientSnapshot = await transactionClientRef.get();
+    const transactionDocRef = transactionsRef.doc(transactionId);
 
-    const transactionClientDocs: TransactionClientDocProps[] = [];
+    const transactionDocSnapshot = await transactionDocRef.get();
 
-    transactionClientSnapshot.forEach((transactionClientDoc) => {
-      transactionClientDocs.push(
-        transactionClientDoc.data() as TransactionClientDocProps
-      );
-    });
+    if (!transactionDocSnapshot.exists)
+      throw new NotFoundError('id transaksi tidak ditemukan');
 
-    const transactionSellerRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTION_SELLERS_COLLECTION
-    );
+    const transactionDocData =
+      transactionDocSnapshot.data() as TransactionDocProps;
 
-    const transactionSellerSnapshot = await transactionSellerRef.get();
-
-    const transactionSellerDocs: TransactionSellerDocProps[] = [];
-
-    transactionSellerSnapshot.forEach((transactionSellerDoc) => {
-      transactionSellerDocs.push(
-        transactionSellerDoc.data() as TransactionSellerDocProps
-      );
-    });
-
-    const transactionClientDoc = transactionClientDocs.find(
-      (transactionClientDoc) => {
-        const isExist = transactionClientDoc.transactionItemsDetails.findIndex(
-          (transactionItemDetails) =>
-            transactionItemDetails.transactionId === transactionId
-        );
-
-        if (isExist) return true;
-        return false;
-      }
-    );
-
-    const transactionSellerDoc = transactionSellerDocs.find(
-      (transactionSellerDoc) => transactionSellerDoc.id === transactionId
-    );
-
-    if (
-      transactionClientDoc === undefined ||
-      transactionSellerDoc === undefined
-    )
-      throw new NotFoundError('id transaksi tidak ada');
+    const transactionRecycledItems = transactionDocData.recycledItems;
 
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
     );
 
-    const transactionItemsDetails =
-      transactionClientDoc.transactionItemsDetails;
+    for (const transactionRecycledItem of transactionRecycledItems) {
+      if (transactionRecycledItem.statusItemTransaction === 'rejected')
+        continue;
 
-    for (const transactionDetails of transactionItemsDetails) {
-      if (transactionDetails.transactionId !== transactionId) continue;
+      const recycledItem = transactionRecycledItem.recycledItem;
+      const recycledItemDocRef = recycledItemsRef.doc(recycledItem.id);
+      const recycledItemDocSnapshot = await recycledItemDocRef.get();
 
-      const transactionItemDetails = transactionDetails.transactionItemDetails;
+      if (!recycledItemDocSnapshot.exists)
+        throw new NotFoundError(
+          'id barang atau sampah daur ulang tidak ditemukan'
+        );
 
-      for (const transactionItemDetail of transactionItemDetails) {
-        if (transactionItemDetail.statusItemTransaction === 'rejected')
-          continue;
+      const recycledItemDocData =
+        recycledItemDocSnapshot.data() as RecycledItem;
 
-        const txRecycledItem = transactionItemDetail.recycledItem;
-
-        const recycledItemDocRef = recycledItemsRef.doc(txRecycledItem.id);
-
-        const recycledItemDocSnapshot = await recycledItemDocRef.get();
-
-        if (!recycledItemDocSnapshot.exists)
-          throw new NotFoundError(
-            'id barang atau sampah daur ulang tidak ditemukan'
-          );
-
-        const recycledItemDocData =
-          recycledItemDocSnapshot.data() as RecycledItem;
-
-        await recycledItemDocRef.update({
-          sold: recycledItemDocData.sold + transactionItemDetail.itemCartAmount,
-        });
-      }
+      await recycledItemDocRef.update({
+        sold: recycledItemDocData.sold + transactionRecycledItem.itemCartAmount,
+      });
     }
 
-    transactionClientDoc.transactionItemsDetails.map(
-      (transactionItemDetails) => {
-        if (transactionItemDetails.transactionId === transactionId) {
-          return {
-            ...transactionItemDetails,
-            statusTransaction: 'done',
-          };
-        } else {
-          return transactionItemDetails;
-        }
-      }
-    );
-
-    await transactionClientRef
-      .doc(transactionClientDoc.id)
-      .set(transactionClientDoc);
-
-    await transactionSellerRef.doc(transactionId).update({
+    await transactionDocRef.update({
       statusTransaction: 'done',
     });
 

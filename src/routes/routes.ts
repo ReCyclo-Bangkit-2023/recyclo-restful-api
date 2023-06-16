@@ -12,9 +12,10 @@ import {
   deleteTransaction,
   deleteWaste,
   getAllRecycledGoods,
+  getClientTransactions,
   getItemCarts,
   getRecycledItems,
-  getTransactions,
+  getSellerTransactions,
   getWastes,
   login,
   orderCompleteTransaction,
@@ -185,8 +186,16 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
   },
   {
     method: 'GET',
-    path: '/api/transactions',
-    handler: getTransactions,
+    path: '/api/transactions/client',
+    handler: getClientTransactions,
+    options: {
+      auth: 'jwt-auth-bearer',
+    },
+  },
+  {
+    method: 'GET',
+    path: '/api/transactions/seller',
+    handler: getSellerTransactions,
     options: {
       auth: 'jwt-auth-bearer',
     },
@@ -217,7 +226,7 @@ const routes: ServerRoute<ReqRefDefaults>[] = [
   },
   {
     method: 'DELETE',
-    path: '/api/transactions/{transactionId}/cancel-order',
+    path: '/api/transactions/{transactionClientId}/cancel-order',
     handler: deleteTransaction,
     options: {
       auth: 'jwt-auth-bearer',

@@ -11,7 +11,8 @@ import getRecycledItems from './recyclo-handlers/recycled-items-handler/get-recy
 import register from './recyclo-handlers/register.js';
 import addTransactions from './recyclo-handlers/transaction-handlers/add-transactions.js';
 import deleteTransaction from './recyclo-handlers/transaction-handlers/delete-transaction.js';
-import getTransactions from './recyclo-handlers/transaction-handlers/get-transactions.js';
+import getClientTransactions from './recyclo-handlers/transaction-handlers/get-client-transactions.js';
+import getSellerTransactions from './recyclo-handlers/transaction-handlers/get-seller-transactions.js';
 import {
   confirmSellerTransaction,
   orderCompleteTransaction,
@@ -32,9 +33,10 @@ export {
   deleteTransaction,
   deleteWaste,
   getAllRecycledGoods,
+  getClientTransactions,
   getItemCarts,
   getRecycledItems,
-  getTransactions,
+  getSellerTransactions,
   getWastes,
   login,
   orderCompleteTransaction,

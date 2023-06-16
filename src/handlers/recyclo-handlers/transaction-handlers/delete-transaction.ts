@@ -2,7 +2,10 @@ import { Firestore } from '@google-cloud/firestore';
 import type { ReqRefDefaults, Request, ResponseToolkit } from '@hapi/hapi';
 import config from '../../../config/config.js';
 import NotFoundError from '../../../exception/not-found-error.js';
-import { RecycledItem, TransactionDocProps } from '../../../types/types.js';
+import {
+  RecycledItem,
+  TransactionClientDocProps,
+} from '../../../types/types.js';
 
 const firestoreDB = new Firestore();
 
@@ -11,50 +14,65 @@ const deleteTransaction = async (
   h: ResponseToolkit<ReqRefDefaults>
 ) => {
   try {
-    const { transactionId } = request.params as {
-      transactionId: string;
+    const { transactionClientId } = request.params as {
+      transactionClientId: string;
     };
 
-    const transactionsRef = firestoreDB.collection(
-      config.CLOUD_FIRESTORE_TRANSACTIONS_COLLECTION
+    const transactionClientRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTION_CLIENTS_COLLECTION
     );
 
-    const transactionDocRef = transactionsRef.doc(transactionId);
+    const transactionClientDocRef =
+      transactionClientRef.doc(transactionClientId);
 
-    const transactionDocSnapshot = await transactionDocRef.get();
+    const transactionClientDoc = (
+      await transactionClientDocRef.get()
+    ).data() as TransactionClientDocProps;
 
-    if (!transactionDocSnapshot.exists)
-      throw new NotFoundError('id transaksi tidak ditemukan');
+    const transactionItemsDetails =
+      transactionClientDoc.transactionItemsDetails;
 
-    const transactionDocData =
-      transactionDocSnapshot.data() as TransactionDocProps;
+    const transactionIds: string[] = [];
 
     const recycledItemsRef = firestoreDB.collection(
       config.CLOUD_FIRESTORE_RECYCLED_ITEMS_COLLECTION
     );
 
-    const transactionRecycledItems = transactionDocData.recycledItems;
+    for (const transactionDetails of transactionItemsDetails) {
+      transactionIds.push(transactionDetails.transactionId);
 
-    for (const transactionRecycledItem of transactionRecycledItems) {
-      if (transactionRecycledItem.statusItemTransaction === 'rejected')
-        continue;
+      for (const transactionItem of transactionDetails.transactionItemDetails) {
+        if (transactionItem.statusItemTransaction === 'rejected') continue;
 
-      const recycledItemData = transactionRecycledItem.recycledItem;
+        const txRecycledItem = transactionItem.recycledItem;
 
-      const recycledItemDocRef = recycledItemsRef.doc(recycledItemData.id);
+        const recycledItemDocRef = recycledItemsRef.doc(txRecycledItem.id);
 
-      const recycledItemDocSnapshot = await recycledItemDocRef.get();
+        const recycledItemDocSnapshot = await recycledItemDocRef.get();
 
-      const recycledItemDocData =
-        recycledItemDocSnapshot.data() as RecycledItem;
+        if (!recycledItemDocSnapshot.exists)
+          throw new NotFoundError(
+            'id barang atau sampah daur ulang tidak ditemukan'
+          );
 
-      await recycledItemDocRef.update({
-        amount:
-          recycledItemDocData.amount + transactionRecycledItem.itemCartAmount,
-      });
+        const recycledItemDocData =
+          recycledItemDocSnapshot.data() as RecycledItem;
+
+        await recycledItemDocRef.update({
+          sold: recycledItemDocData.sold + transactionItem.itemCartAmount,
+        });
+      }
     }
 
-    await transactionDocRef.delete();
+    await transactionClientDocRef.delete();
+
+    const transactionSellerRef = firestoreDB.collection(
+      config.CLOUD_FIRESTORE_TRANSACTION_SELLERS_COLLECTION
+    );
+
+    for (const transactionId of transactionIds) {
+      await transactionSellerRef.doc(transactionId).delete();
+    }
 
     return h.response({
       error: false,

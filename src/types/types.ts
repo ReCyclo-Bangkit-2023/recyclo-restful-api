@@ -62,26 +62,44 @@ export type AddWasteReqBodyProps = AddRecycledGoodsReqBodyProps;
 
 export type PutWasteReqBodyProps = AddWasteReqBodyProps;
 
-export interface TransactionDocProps {
+export interface TransactionClientDocProps {
   id: string;
   userDetails: Omit<UserDataDocProps, 'password'>;
-  recycledItems: {
-    recycledItem: RecycledItem;
+  transactionItemsDetails: {
+    transactionId: string;
     sellerDetails: Omit<UserDataDocProps, 'password'>;
-    itemCartAmount: number;
-    statusItemTransaction: 'accepted' | 'rejected';
-    message: string;
+    transactionItemDetails: {
+      recycledItem: RecycledItem;
+      itemCartAmount: number;
+      statusItemTransaction: 'accepted' | 'rejected';
+      message: string;
+    }[];
+    statusTransaction: 'waiting' | 'sending' | 'done';
+    transactionPrice: number;
+    transactionTotalAmount: number;
   }[];
-  totalPrice: number;
-  totalAmount: number;
-  statusTransaction: 'waiting' | 'sending' | 'done';
   orderedDate: string;
   orderedTimestamp: number;
 }
 
-export interface AddTransactionReqBodyProps
-  extends Pick<TransactionDocProps, 'totalAmount'> {
+export interface AddTransactionReqBodyProps {
   recycledId: string;
+  totalAmount: number;
+}
+
+export interface TransactionSellerDocProps {
+  id: string;
+  userDetails: Omit<UserDataDocProps, 'password'>;
+  sellerDetails: Omit<UserDataDocProps, 'password'>;
+  transactionItemDetails: {
+    recycledItem: RecycledItem;
+    itemCartAmount: number;
+  }[];
+  statusTransaction: 'waiting' | 'sending' | 'done';
+  transactionPrice: number;
+  transactionTotalAmount: number;
+  orderedDate: string;
+  orderedTimestamp: number;
 }
 
 export interface ItemCartDocProps {
